@@ -1,0 +1,43 @@
+name: repomind-ai
+services:
+  frontend:
+    build: ./frontend
+    ports: ["127.0.0.1:5173:80"]
+    depends_on: [backend]
+  backend:
+    build: ./backend
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      REPO_FILES: "${REPO_FILES:-300}"
+      REPO_FILE_BYTES: "${REPO_FILE_BYTES:-200000}"
+      REPO_DOWNLOAD_BYTES: "${REPO_DOWNLOAD_BYTES:-12000000}"
+      REPO_REPO_KIB: "${REPO_REPO_KIB:-50000}"
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+      REPO_STORED_BYTES: "${REPO_STORED_BYTES:-4000000}"
+      REPO_SECONDS: "${REPO_SECONDS:-120}"
+      GOOGLE_API_KEY: "${GOOGLE_API_KEY:-}"
+      GOOGLE_CHAT_MODEL: "${GOOGLE_CHAT_MODEL:-gemini-3.5-flash-lite}"
+      GOOGLE_EMBED_MODEL: "${GOOGLE_EMBED_MODEL:-gemini-embedding-001}"
+      VECTOR_DIM: "${VECTOR_DIM:-768}"
+      EMBED_BATCH: "${EMBED_BATCH:-12}"
+      CHUNK_SIZE: "${CHUNK_SIZE:-1400}"
+      CHUNK_OVERLAP: "${CHUNK_OVERLAP:-160}"
+      MAX_CHUNKS: "${MAX_CHUNKS:-1500}"
+      RETRIEVAL_TOP_K: "${RETRIEVAL_TOP_K:-5}"
+      MONGO_URI: mongodb://mongodb:27017
+      QDRANT_URL: http://qdrant:6333
+    restart: on-failure
+    depends_on: [mongodb, qdrant]
+  mongodb:
+    image: mongo:8.0
+    volumes: [mongo_data:/data/db]
+  qdrant:
+    image: qdrant/qdrant:v1.15.5
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+volumes:
+  mongo_data:
+  qdrant_data:
